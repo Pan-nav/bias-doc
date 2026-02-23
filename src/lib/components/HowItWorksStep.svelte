@@ -1,4 +1,9 @@
 <script lang="ts">
+	/**
+	 * HowItWorksStep – a node in the "How it works" diagram (numbered circle + label).
+	 * Validation: stepNumber must be 1–3; label must be non-empty. Blue circle 
+	 * matches the primary accent and the white number ensures readability.
+	 */
 
 	import { fly } from 'svelte/transition';
 

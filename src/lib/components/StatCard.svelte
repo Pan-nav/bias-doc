@@ -1,4 +1,9 @@
 <script lang="ts">
+	/**
+	 * StatCard – displays a single statistic (e.g. "73%", "Misinfo") in the Problem section.
+	 * Validation: label and value are required and no empty strings are allowed by the parent data.
+	 * Uses svelte/transition fade for a simple entrance animation on scroll into view.
+	 */
 
 	import { fade } from 'svelte/transition';
 

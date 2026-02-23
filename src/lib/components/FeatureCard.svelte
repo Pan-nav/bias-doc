@@ -1,4 +1,9 @@
 <script lang="ts">
+	/**
+	 * FeatureCard – single feature label in the "Powerful features" grid.
+	 * Minimal design: dark background, white text and 15px radius.
+	 * Validation: title is required. Chose fly transition for a light upward motion on load.
+	 */
 
 	import { fly } from 'svelte/transition';
 
