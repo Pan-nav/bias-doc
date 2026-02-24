@@ -66,17 +66,21 @@
 				in:fade={{ delay: 150, duration: 450 }}
 			>
 				<div class="flex items-center gap-2">
-					<svg class="h-4 w-4 shrink-0 text-[#1898F4]" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8
-						12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-					</svg>
+					<span
+						class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#1898F4] text-[10px] leading-none text-black"
+						aria-hidden="true"
+					>
+						✓
+					</span>
 					<span>No credit card</span>
 				</div>
 				<div class="flex items-center gap-2">
-					<svg class="h-4 w-4 shrink-0 text-[#1898F4]" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8
-						12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-					</svg>
+					<span
+						class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#1898F4] text-[10px] leading-none text-black"
+						aria-hidden="true"
+					>
+						✓
+					</span>
 					<span>Free forever</span>
 				</div>
 			</div>
