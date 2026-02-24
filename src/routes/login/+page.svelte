@@ -1,9 +1,8 @@
 <script lang="ts">
-	// Placeholder login/signup page – to be built in a later version.
-</script>
+	import { redirect } from '@sveltejs/kit';
 
-<div class="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-8">
-	<h1 class="font-inter text-2xl font-bold text-white">Login / Sign Up</h1>
-	<p class="font-poppins text-sm text-[#A6A6A6]">This page will be implemented in a later version.</p>
-	<a href="/" class="text-[#1898F4] underline">← Back to home</a>
-</div>
+	// Redirect old /login links to the main auth page so one place handles both login and signup.
+	export function load() {
+		throw redirect(302, '/auth');
+	}
+</script>

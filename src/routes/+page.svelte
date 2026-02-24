@@ -1,9 +1,16 @@
 <script lang="ts">
-	// Landing page for "Doctor" – Bias & Misinformation Detector
+	/**
+	 * Landing page for BiasDoc – Bias & Misinformation Detector.
+	 * Uses Svelte transitions (fade, fly) for subtle animations on load – chosen over CSS-only
+	 * because Svelte's transition are easier to implement in the component focused structure.
+	 * Reusable components (StatCard, FeatureCard, etc.) are imported from $lib to keep this
+	 * file focused on layout and data.
+	 */
 
 	import { fade, fly } from 'svelte/transition';
 	import { FeatureCard, HowItWorksStep, StatCard, PrimaryButton } from '$lib';
 
+	/** Statistic cards in "The Problem" section. Type ensures label and value are always provided. */
 	type LandingStatistic = {
 		label: string;
 		value: string;
@@ -15,6 +22,7 @@
 		{ label: 'With AI', value: '6 sec' },
 	];
 
+	/** Feature labels for the 6-card grid. Stored in an array so we can loop with {#each} and avoid repetition. */
 	const featureCards = [
 		'Bias Detection',
 		'Source Verify',
@@ -59,13 +67,15 @@
 			>
 				<div class="flex items-center gap-2">
 					<svg class="h-4 w-4 shrink-0 text-[#1898F4]" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8
+						12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
 					</svg>
 					<span>No credit card</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<svg class="h-4 w-4 shrink-0 text-[#1898F4]" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8
+						12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
 					</svg>
 					<span>Free forever</span>
 				</div>
@@ -73,7 +83,7 @@
 
 			<!-- Standard CTA button: links to login/signup -->
 			<div class="mt-8" in:fly={{ y: 20, duration: 400 }}>
-				<PrimaryButton label="Get Started Free" href="/login" />
+				<PrimaryButton label="Get Started Free" href="/auth" />
 			</div>
 		</div>
 	</div>
@@ -91,6 +101,7 @@
 				</p>
 			</div>
 
+			<!-- keyStatistics loop: stat.label used as key so Svelte can track items if order changes. -->
 			<div class="mt-10 grid grid-cols-3 justify-items-center gap-6">
 				{#each keyStatistics as stat (stat.label)}
 					<StatCard label={stat.label} value={stat.value} />
@@ -144,6 +155,7 @@
 				</p>
 			</div>
 
+			<!-- featureCards: title as key ensures correct DOM updates when iterating. -->
 			<div class="mt-10 grid grid-cols-3 justify-items-center gap-6">
 				{#each featureCards as title (title)}
 					<FeatureCard {title} />
@@ -152,6 +164,7 @@
 		</div>
 	</div>
 
+	<!-- Final Call to Action to encourage user to sign up-->
 	<div id="start" class="bg-black py-28">
 		<div class="mx-auto flex max-w-[1200px] flex-col items-center rounded-[15px] px-12 py-16 text-center" style="min-height: 260px; background: linear-gradient(90deg, #1856F4 0%, #1898F4 21%, #6C5EAE 100%);">
 			<h2 class="font-poppins text-[45px] font-extrabold tracking-normal text-white" in:fade={{ duration: 450 }}>
@@ -161,7 +174,7 @@
 				Join Thousands Using Bias Doctor...
 			</p>
 			<div class="mt-6">
-				<PrimaryButton label="Get Started Free" href="/login" variant="white" />
+				<PrimaryButton label="Get Started Free" href="/auth" variant="white" />
 			</div>
 		</div>
 	</div>

@@ -1,5 +1,6 @@
-// Central export file for reusable components.
-// This makes imports shorter and clearer in the route files.
+/**
+ * Central export file for reusable components.
+ */
 
 export { default as StatCard } from './components/StatCard.svelte';
 export { default as FeatureCard } from './components/FeatureCard.svelte';
