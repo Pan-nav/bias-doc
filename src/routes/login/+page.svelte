@@ -58,18 +58,21 @@
 
 <div
 	class="flex min-h-[calc(100vh-72px)] w-full items-center justify-center px-4 py-12 font-inter"
-	style="background: linear-gradient(180deg, #00F3F9 0%, #000000 100%);"
+	style="background:
+		radial-gradient(ellipse 80% 70% at 0% 100%, #00F3F9 0%, transparent 60%),
+		radial-gradient(ellipse 90% 80% at 0% 100%, #0034EB 0%, transparent 50%),
+		radial-gradient(ellipse 60% 50% at 10% 90%, #0A34CD 0%, transparent 45%),
+		#000000;"
 >
 	<div
 		class="w-full max-w-[450px] rounded-[15px] px-8 py-10 shadow-xl"
 		style="background-color: #000000;"
 	>
 		<h1 class="text-2xl font-bold text-white">Login</h1>
-		<p class="mt-1 text-sm text-gray-400">Enter your details to continue</p>
 
 		<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="mt-6 flex flex-col gap-4">
 			<div class="flex flex-col gap-2">
-				<label for="login-email" class="text-sm font-medium text-white">Email Address</label>
+				<label for="login-email" class="text-sm font-medium text-white">Email</label>
 				<input
 					id="login-email"
 					type="email"
