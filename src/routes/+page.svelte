@@ -87,7 +87,7 @@
 
 			<!-- Standard CTA button: links to login/signup -->
 			<div class="mt-8" in:fly={{ y: 20, duration: 400 }}>
-				<PrimaryButton label="Get Started Free" href="/auth" />
+				<PrimaryButton label="Get Started Free" href="/login" />
 			</div>
 		</div>
 	</div>
@@ -178,7 +178,7 @@
 				Join Thousands Using Bias Doctor...
 			</p>
 			<div class="mt-6">
-				<PrimaryButton label="Get Started Free" href="/auth" variant="white" />
+				<PrimaryButton label="Get Started Free" href="/login" variant="white" />
 			</div>
 		</div>
 	</div>

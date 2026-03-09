@@ -6,9 +6,10 @@
 		variant?: ButtonVariant;
 		href?: string;
 		type?: 'button' | 'submit';
+		disabled?: boolean;
 	};
 
-	let { label, variant = 'gradient', href, type = 'button' }: PrimaryButtonProps = $props();
+	let { label, variant = 'gradient', href, type = 'button', disabled = false }: PrimaryButtonProps = $props();
 
 	/* Standard CTA style per design: gradient fill, white text, 15px radius. */
 	const gradientClasses ='flex h-[38px] min-w-[208px] items-center justify-center gap-2 rounded-[15px]' +
@@ -34,9 +35,10 @@ Avoids wrapping buttons in links. -->
 	</a>
 {:else}
 	<button
-		class="{variant === 'white' ? whiteClasses : gradientClasses}"
+		class="{variant === 'white' ? whiteClasses : gradientClasses} {disabled ? 'cursor-not-allowed opacity-50' : ''}"
 		style={variant === 'gradient' ? gradientStyle : ''}
 		{type}
+		{disabled}
 	>
 		{label}
 	</button>

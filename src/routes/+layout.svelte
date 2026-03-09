@@ -18,14 +18,14 @@
 
 		<div class="flex items-center gap-2">
 			<a
-				href="/auth"
+				href="/login"
 				class="flex h-8 w-[97px] items-center justify-center rounded-[15px] border border-[#1898F4]
 				bg-neutral-600 px-5 py-2 font-inter text-sm font-bold leading-5 tracking-normal text-white"
 			>
 				Login
 			</a>
 			<a
-				href="/auth"
+				href="/login"
 				class="flex h-8 w-[101px] items-center justify-center rounded-[15px] border border-[#1898F4]
 				 bg-[#1898F4] px-5 py-2 font-inter text-sm font-bold leading-5 tracking-normal text-white"
 			>
