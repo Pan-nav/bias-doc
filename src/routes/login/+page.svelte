@@ -18,10 +18,10 @@
 	let passwordError = $state('');
 	let showCreateConfirm = $state(false);
 
-	// Reactive validation so we can disable the button and show errors inline
+	// Reactive validation so we can disable the button and show errors inli
 	let emailValidation = $derived(validateEmail(userEmail));
 	let passwordValidation = $derived(validatePassword(userPassword));
-	let isFormValid = $derived(emailValidation.valid && passwordValidation.valid && !isSubmitting);
+	let isFormValid = $derived((emailValidation.valid || passwordValidation.valid) && !isSubmitting);
 
 	function handleSubmit() {
 		if (!isFormValid) return;
@@ -56,13 +56,12 @@
 	}
 </script>
 
+<!-- The background image, which will be default to all pages except the landing page -->
 <div
 	class="flex min-h-[calc(100vh-72px)] w-full items-center justify-center px-4 py-12 font-inter"
 	style="background:
-		radial-gradient(ellipse 80% 70% at 0% 100%, #00F3F9 0%, transparent 60%),
-		radial-gradient(ellipse 90% 80% at 0% 100%, #0034EB 0%, transparent 50%),
-		radial-gradient(ellipse 60% 50% at 10% 90%, #0A34CD 0%, transparent 45%),
-		#000000;"
+    radial-gradient(ellipse at bottom left, #00F3F9, #0034EB 30%, transparent 55%),
+    #000;"
 >
 	<div
 		class="w-full max-w-[450px] rounded-[15px] px-8 py-10 shadow-xl"
@@ -92,7 +91,7 @@
 				<div class="relative">
 					<input
 						id="login-password"
-						type={isPasswordVisible ? 'text' : 'password'}
+						type="password"
 						bind:value={userPassword}
 						placeholder="Enter password"
 						autocomplete="current-password"
@@ -103,7 +102,7 @@
 						type="button"
 						class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
 						aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
-						onclick={() => (isPasswordVisible = !isPasswordVisible)}
+						disabled
 					>
 						{#if isPasswordVisible}
 							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

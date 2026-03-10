@@ -1,7 +1,7 @@
 /**
  * auth.ts – Simple auth storage and logic for coursework.
  * Uses localStorage so we don't need a server. For production we would use a proper backend
- * and never store plain passwords. See TODO comments below.
+ * and never store plain passwords.
  */
 
 import { writable } from 'svelte/store';
