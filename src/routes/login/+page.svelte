@@ -133,6 +133,7 @@
 					type="submit"
 					label={isSubmitting ? 'Loading...' : 'Login/Sign up'}
 					disabled={!isFormValid}
+					fullWidth
 				/>
 			</div>
 		</form>
