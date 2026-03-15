@@ -6,14 +6,14 @@
 export function validateEmail(email: string): { valid: boolean; error: string } {
 	const trimmed = email.trim();
 	if (trimmed.length === 0) {
-		return { valid: false, error: 'Please enter a valid email address' };
+		return { valid: false, error: 'Email is required' };
 	}
 	if (!trimmed.includes('@')) {
-		return { valid: false, error: 'Please enter a valid email address' };
+		return { valid: false, error: 'Please enter a valid email address (e.g. name@example.com)' };
 	}
 	const afterAt = trimmed.split('@')[1] ?? '';
 	if (!afterAt || !afterAt.includes('.')) {
-		return { valid: false, error: 'Please enter a valid email address' };
+		return { valid: false, error: 'Please enter a valid email address (e.g. name@example.com)' };
 	}
 	return { valid: true, error: '' };
 }
