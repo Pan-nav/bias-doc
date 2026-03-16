@@ -21,9 +21,13 @@
 	let passwordValidation = $derived(validatePassword(userPassword));
 	let canSubmit = $derived((emailValidation.valid && passwordValidation.valid) && !isSubmitting);
 
+	// Track when the user has left a field so errors only show on blur.
+	let emailTouched = $state(false);
+	let passwordTouched = $state(false);
+
 	// Recompute email error whenever userEmail changes
 	$effect(() => {
-		if (userEmail.trim() !== '' && !emailValidation.valid) {
+		if (emailTouched && userEmail.trim() !== '' && !emailValidation.valid) {
 			emailError = emailValidation.error;
 		} else {
 			emailError = '';
@@ -32,7 +36,7 @@
 
 	// Recompute password errors whenever userPassword changes
 	$effect(() => {
-		if (userPassword.trim() !== '' && passwordValidation.errors.length > 0) {
+		if (passwordTouched && userPassword.trim() !== '' && passwordValidation.errors.length > 0) {
 			passwordErrors = [...passwordValidation.errors];
 		} else {
 			passwordErrors = [];
@@ -91,6 +95,11 @@
 					id="login-email"
 					type="text"
 					bind:value={userEmail}
+					onfocus={() => {
+						emailTouched = false;
+						emailError = '';
+					}}
+					onblur={() => (emailTouched = true)}
 					placeholder="example@gmail.com"
 					autocomplete="email"
 					class="w-full rounded-lg border px-4 py-3 text-white placeholder-gray-500 focus:outline-none"
@@ -109,6 +118,12 @@
 						id="login-password"
 						type={showPassword ? 'text' : 'password'}
 						bind:value={userPassword}
+						onfocus={() => {
+							passwordTouched = false;
+							passwordErrors = [];
+							passwordError = '';
+						}}
+						onblur={() => (passwordTouched = true)}
 						placeholder="Enter password"
 						autocomplete="current-password"
 						class="w-full rounded-lg border py-3 pl-4 pr-10 text-white placeholder-gray-500 focus:outline-none"
