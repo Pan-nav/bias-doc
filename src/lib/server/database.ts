@@ -9,6 +9,19 @@ export type DbUser = {
 // Single SQLite file used for the coursework prototype.
 const DB_PATH = 'biasdoc.db';
 
+// Analyses table – mirrors the design diagram:
+// id, user_id, input_text, bias_score, bias_type, summary, sources, created_at.
+export type DbAnalysis = {
+	id: number;
+	userId: number;
+	inputText: string;
+	biasScore: number;
+	biasType: string;
+	summary: string;
+	sources: string;
+	createdAt: string;
+};
+
 class AppDatabase {
 	private static instance: AppDatabase;
 	private db: any;
@@ -38,6 +51,14 @@ class AppDatabase {
 			)
 			.run();
 
+		// Ensure there is at least one user row so analyses can always link to a valid user_id.
+		const anyUser = this.db.prepare('SELECT id FROM users LIMIT 1').get();
+		if (!anyUser) {
+			this.db
+				.prepare('INSERT INTO users (email, password_hash) VALUES (?, ?)')
+				.run('demo@example.com', 'demo-password');
+		}
+
 		// Analyses table – stores results linked back to a user via user_id.
 		this.db
 			.prepare(
@@ -62,7 +83,7 @@ class AppDatabase {
 	}
 
 	findUserByEmail(email: string): DbUser | null {
-		const stmt = this.db.prepare('SELECT email, password_hash FROM users WHERE email = ?');
+		const stmt = this.db.prepare('SELECT id, email, password_hash FROM users WHERE email = ?');
 		const row = stmt.get(email.trim().toLowerCase());
 		if (!row) return null;
 		return { email: row.email, passwordHash: row.password_hash } satisfies DbUser;
@@ -72,6 +93,71 @@ class AppDatabase {
 		const stmt = this.db.prepare('SELECT 1 FROM users WHERE email = ? LIMIT 1');
 		const row = stmt.get(email.trim().toLowerCase());
 		return !!row;
+	}
+
+	createAnalysis(
+		userId: number,
+		inputText: string,
+		options: {
+			biasScore: number;
+			biasType: string;
+			summary: string;
+			sources: string;
+		}
+	): number {
+		const stmt = this.db.prepare(
+			`INSERT INTO analyses (user_id, input_text, bias_score, bias_type, summary, sources)
+			 VALUES (?, ?, ?, ?, ?, ?)`
+		);
+		const result = stmt.run(
+			userId,
+			inputText,
+			options.biasScore,
+			options.biasType,
+			options.summary,
+			options.sources
+		);
+		return Number(result.lastInsertRowid);
+	}
+
+	getAnalysesForUser(userId: number): DbAnalysis[] {
+		const stmt = this.db.prepare(
+			`SELECT id, user_id, input_text, bias_score, bias_type, summary, sources, created_at
+			 FROM analyses
+			 WHERE user_id = ?
+			 ORDER BY created_at ASC`
+		);
+		const rows = stmt.all(userId) as any[];
+		return rows.map((row) => ({
+			id: row.id,
+			userId: row.user_id,
+			inputText: row.input_text,
+			biasScore: row.bias_score ?? 0,
+			biasType: row.bias_type ?? '',
+			summary: row.summary ?? '',
+			sources: row.sources ?? '',
+			createdAt: row.created_at
+		}));
+	}
+
+	getAnalysisById(id: number): DbAnalysis | null {
+		const stmt = this.db.prepare(
+			`SELECT id, user_id, input_text, bias_score, bias_type, summary, sources, created_at
+			 FROM analyses
+			 WHERE id = ?`
+		);
+		const row = stmt.get(id) as any;
+		if (!row) return null;
+		return {
+			id: row.id,
+			userId: row.user_id,
+			inputText: row.input_text,
+			biasScore: row.bias_score ?? 0,
+			biasType: row.bias_type ?? '',
+			summary: row.summary ?? '',
+			sources: row.sources ?? '',
+			createdAt: row.created_at
+		};
 	}
 }
 

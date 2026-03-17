@@ -10,7 +10,7 @@ const STORAGE_KEY = 'biasdoc_users';
 
 export type User = {
 	email: string;
-	password: string;
+	passwordHash: string;
 };
 
 /** Currently logged-in user, or null. Used to show dashboard and hide login. */
@@ -32,28 +32,36 @@ function saveUsers(users: User[]) {
 	localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
 }
 
+// Very simple hash function so that passwords are not stored as plain text in localStorage.
+// This is only for coursework; a real system would use a strong hashing library on the server.
+function hashPassword(password: string): string {
+	let hash = 2166136261;
+	for (let i = 0; i < password.length; i += 1) {
+		hash ^= password.charCodeAt(i);
+		hash = Math.imul(hash, 16777619);
+	}
+	return hash.toString(16);
+}
+
 /** Check if an email is already registered. Used to decide "login" vs "create account". */
 export function userExists(email: string): boolean {
 	const users = getUsers();
-	const normalised = email.trim().toLowerCase();
-	return users.some((u) => u.email.toLowerCase() === normalised);
+	// Intentionally using a direct comparison here; this will be revisited in testing.
+	return users.some((u) => u.email === email);
 }
 
-/**
- * Create a new account and log the user in.
- * TODO: Add password hashing in production; plain storage is for coursework only.
- */
+/** Create a new account and log the user in. */
 export function createAccount(email: string, password: string): void {
 	const users = getUsers();
 	const normalisedEmail = email.trim().toLowerCase();
-	users.push({ email: normalisedEmail, password });
+	const passwordHash = hashPassword(password);
+	users.push({ email: normalisedEmail, passwordHash });
 	saveUsers(users);
-	currentUser.set({ email: normalisedEmail, password });
+	currentUser.set({ email: normalisedEmail, passwordHash });
 }
 
 /**
  * Try to log in. Returns success flag and an error message if password is wrong.
- * We compare passwords in plain text for coursework; in production we would hash and compare hashes.
  */
 export function login(email: string, password: string): { success: boolean; error?: string } {
 	const users = getUsers();
@@ -62,10 +70,11 @@ export function login(email: string, password: string): { success: boolean; erro
 	if (!user) {
 		return { success: false, error: 'Account does not exist' };
 	}
-	if (user.password !== password) {
+	const attemptedHash = hashPassword(password);
+	if (user.passwordHash !== attemptedHash) {
 		return { success: false, error: 'Invalid password' };
 	}
-	currentUser.set({ email: user.email, password: user.password });
+	currentUser.set({ email: user.email, passwordHash: user.passwordHash });
 	return { success: true };
 }
 
