@@ -1,83 +1,78 @@
 /**
- * auth.ts – Simple auth storage and logic for coursework.
- * Uses localStorage so we don't need a server. For production we would use a proper backend
- * and never store plain passwords.
+ * Client-side session state only (who is logged in for UI).
+ * Users and passwords live in SQLite; session is an HTTP-only cookie set by /api/auth.
  */
 
+import { invalidateAll } from '$app/navigation';
 import { writable } from 'svelte/store';
-
-const STORAGE_KEY = 'biasdoc_users';
 
 export type User = {
 	email: string;
-	passwordHash: string;
 };
 
-/** Currently logged-in user, or null. Used to show dashboard and hide login. */
 export const currentUser = writable<User | null>(null);
 
-function getUsers(): User[] {
-	if (typeof window === 'undefined') return [];
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
-		if (!raw) return [];
-		return JSON.parse(raw);
-	} catch {
-		return [];
+async function postAuth(body: Record<string, string>) {
+	const res = await fetch('/api/auth', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(body)
+	});
+	return res.json();
+}
+
+/** Check if an email is already registered (SQLite). */
+export async function userExists(email: string): Promise<boolean> {
+	const data = await postAuth({ action: 'userExists', email: email.trim().toLowerCase() });
+	return Boolean(data?.exists);
+}
+
+/** Create account in SQLite and set session cookie. */
+export async function createAccount(
+	email: string,
+	password: string
+): Promise<{ ok: boolean; error?: string }> {
+	const data = await postAuth({
+		action: 'register',
+		email: email.trim().toLowerCase(),
+		password
+	});
+	if (data?.ok) {
+		currentUser.set({ email: email.trim().toLowerCase() });
+		return { ok: true };
 	}
+	return { ok: false, error: data?.error ?? 'Could not create account' };
 }
 
-function saveUsers(users: User[]) {
-	if (typeof window === 'undefined') return;
-	localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-}
-
-// Very simple hash function so that passwords are not stored as plain text in localStorage.
-// This is only for coursework; a real system would use a strong hashing library on the server.
-function hashPassword(password: string): string {
-	let hash = 2166136261;
-	for (let i = 0; i < password.length; i += 1) {
-		hash ^= password.charCodeAt(i);
-		hash = Math.imul(hash, 16777619);
+/** Log in against SQLite; server sets session cookie. */
+export async function login(
+	email: string,
+	password: string
+): Promise<{ success: boolean; error?: string }> {
+	const data = await postAuth({
+		action: 'login',
+		email: email.trim().toLowerCase(),
+		password
+	});
+	if (data?.success) {
+		currentUser.set({ email: email.trim().toLowerCase() });
+		return { success: true };
 	}
-	return hash.toString(16);
+	return { success: false, error: data?.error ?? 'Login failed' };
 }
 
-/** Check if an email is already registered. Used to decide "login" vs "create account". */
-export function userExists(email: string): boolean {
-	const users = getUsers();
-	// Intentionally using a direct comparison here; this will be revisited in testing.
-	return users.some((u) => u.email === email);
-}
-
-/** Create a new account and log the user in. */
-export function createAccount(email: string, password: string): void {
-	const users = getUsers();
-	const normalisedEmail = email.trim().toLowerCase();
-	const passwordHash = hashPassword(password);
-	users.push({ email: normalisedEmail, passwordHash });
-	saveUsers(users);
-	currentUser.set({ email: normalisedEmail, passwordHash });
-}
-
-/**
- * Try to log in. Returns success flag and an error message if password is wrong.
- */
-export function login(email: string, password: string): { success: boolean; error?: string } {
-	const users = getUsers();
-	const normalisedEmail = email.trim().toLowerCase();
-	const user = users.find((u) => u.email.toLowerCase() === normalisedEmail);
-	if (!user) {
-		return { success: false, error: 'Account does not exist' };
-	}
-	const attemptedHash = hashPassword(password);
-	if (user.passwordHash !== attemptedHash) {
-		return { success: false, error: 'Invalid password' };
-	}
-	currentUser.set({ email: user.email, passwordHash: user.passwordHash });
-	return { success: true };
-}
-
-export function logout(): void {
+/** Clear session cookie and client store. */
+export async function logout(): Promise<void> {
+	await fetch('/api/auth', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ action: 'logout' })
+	});
 	currentUser.set(null);
+	await invalidateAll();
+}
+
+/** Sync store from server (call after layout load or on navigation). */
+export function setUserFromSession(user: User | null): void {
+	currentUser.set(user);
 }

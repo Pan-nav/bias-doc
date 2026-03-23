@@ -49,12 +49,12 @@
 		passwordError = '';
 	});
 
-	function handleSubmit() {
+	async function handleSubmit() {
 		if (!canSubmit) return;
 		const email = userEmail.trim().toLowerCase();
 
-		if (userExists(email)) {
-			const result = login(email, userPassword);
+		if (await userExists(email)) {
+			const result = await login(email, userPassword);
 			if (result.success) {
 				isSubmitting = true;
 				goto('/dashboard');
@@ -66,9 +66,13 @@
 		showCreateConfirm = true;
 	}
 
-	function confirmCreateAccount() {
-		createAccount(userEmail.trim(), userPassword);
+	async function confirmCreateAccount() {
+		const result = await createAccount(userEmail.trim(), userPassword);
 		showCreateConfirm = false;
+		if (!result.ok) {
+			passwordError = result.error ?? 'Could not create account';
+			return;
+		}
 		isSubmitting = true;
 		goto('/dashboard');
 	}
@@ -84,7 +88,7 @@
 		<form
 			onsubmit={(e) => {
 				e.preventDefault();
-				handleSubmit();
+				void handleSubmit();
 			}}
 			class="mt-6 flex flex-col gap-4"
 		>
@@ -192,7 +196,7 @@
 				<button
 					type="button"
 					class="flex-1 rounded-[15px] bg-[#1898F4] py-2 text-sm font-bold text-white hover:bg-[#1478c4]"
-					onclick={confirmCreateAccount}
+					onclick={() => void confirmCreateAccount()}
 				>
 					Yes
 				</button>

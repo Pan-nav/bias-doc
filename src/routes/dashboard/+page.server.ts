@@ -1,20 +1,24 @@
 import type { Actions, PageServerLoad } from './$types';
+import { error, redirect } from '@sveltejs/kit';
 import { appDatabase } from '$lib/server/database';
-import { analyzeTextForBias } from '$lib/server/ai/gemini';
+import { analyseTextForBias } from '$lib/server/ai/gemini';
 
-// For the coursework prototype each analysis is linked to a single demo user (id = 1)
-// so that the foreign key constraint is satisfied without a full session system.
-function requireUserId(): number {
-	return 1;
+function requireUserId(locals: App.Locals): number {
+	if (locals.userId == null) {
+		throw error(401, 'Not signed in');
+	}
+	return locals.userId;
 }
 
-export const load: PageServerLoad = async () => {
-	// Later we can preload the latest analysis for the dashboard if needed.
+export const load: PageServerLoad = async ({ locals }) => {
+	if (locals.userId == null) {
+		redirect(303, '/login');
+	}
 	return {};
 };
 
 export const actions: Actions = {
-	analyze: async ({ request }) => {
+	analyse: async ({ request, locals }) => {
 		const data = await request.formData();
 		const text = String(data.get('text') ?? '').trim();
 
@@ -25,20 +29,20 @@ export const actions: Actions = {
 			};
 		}
 
-		if (text.length > 2000) {
+		if (text.length > 10000) {
 			return {
 				error: 'Text exceeds analysis limit',
 				input: text
 			};
 		}
 
-		const userId = requireUserId();
+		const userId = requireUserId(locals);
 
 		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 9000);
+		const timeout = setTimeout(() => controller.abort(), 120_000);
 
 		try {
-			const result = await analyzeTextForBias(text, controller.signal);
+			const result = await analyseTextForBias(text, controller.signal);
 			clearTimeout(timeout);
 
 			const biasTypeText =
@@ -68,9 +72,18 @@ export const actions: Actions = {
 			};
 		} catch (err) {
 			clearTimeout(timeout);
+			let message =
+				err instanceof Error
+					? err.message
+					: 'Analysis service temporarily unavailable. Please try again.';
+			if (err instanceof Error && err.name === 'AbortError') {
+				message =
+					'Analysis timed out (2 minutes). Try shorter text or check your connection.';
+			}
+			console.error('[analyse]', err);
 
 			return {
-				error: 'Analysis service temporarily unavailable. Please try again.',
+				error: message,
 				input: text
 			};
 		}

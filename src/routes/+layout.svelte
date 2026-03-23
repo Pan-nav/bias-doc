@@ -2,17 +2,30 @@
 	import './layout.css';
 	import '../app.css';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { logout, setUserFromSession } from '$lib/stores/auth';
 
 	/*
 	 * The root +layout.svelte wraps every page in the app, so the navbar appears on all routes
 	 * and children is where each page's content (e.g. the landing page, login page) is loaded.
 	 */
-	let { children } = $props();
+	let { children, data } = $props();
+
+	// Keep client store in sync with SQLite session (cookie) from +layout.server.ts
+	$effect(() => {
+		setUserFromSession(data.user);
+	});
 
 	// Simple check so we can switch the navbar buttons on auth pages vs the dashboard/history.
 	$effect(() => {
 		$page;
 	});
+
+	async function handleLogout(e: MouseEvent) {
+		e.preventDefault();
+		await logout();
+		goto('/login');
+	}
 </script>
 
 <!-- Navbar component that is default and loaded on every page-->
@@ -54,6 +67,7 @@
 					href="/login"
 					class="flex h-8 w-[101px] items-center justify-center rounded-[15px] border border-[#1898F4]
 					 bg-[#1898F4] px-5 py-2 font-inter text-sm font-bold leading-5 tracking-normal text-white"
+					onclick={handleLogout}
 				>
 					Logout
 				</a>

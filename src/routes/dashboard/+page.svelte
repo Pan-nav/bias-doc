@@ -3,6 +3,7 @@
 	import AnalysisResult from '$lib/components/AnalysisResult.svelte';
 	import type { GeminiAnalysisResult } from '$lib/server/ai/gemini';
 	import { enhance } from '$app/forms';
+	import type { ActionResult } from '@sveltejs/kit';
 	import { goto } from '$app/navigation';
 	import { currentUser, logout } from '$lib/stores/auth';
 	import { get } from 'svelte/store';
@@ -30,14 +31,59 @@
 		goto('/login');
 	}
 
-
+	//storing the necessary input, processing and potential output data
 	let text = $state('');
 	let errorMessage = $state<string | null>(null);
 	let isSubmitting = $state(false);
 	let latestResult = $state<GeminiAnalysisResult | null>(null);
 
-let charCount = $derived(text.length);
-let canAnalyze = $derived(charCount > 50 && charCount < 2000 && !isSubmitting);
+	type AnalyseActionData = {
+		error?: string;
+		result?: GeminiAnalysisResult;
+	};
+
+	let charCount = $derived(text.length);
+	let canAnalyse = $derived(charCount > 50 && charCount < 10000 && !isSubmitting);
+
+	/** Kept in script so TypeScript `as` works (markup attribute expressions are plain JS). */
+	const enhanceAnalyse = ({
+		formElement
+	}: {
+			action: URL;
+			formData: FormData;
+			formElement: HTMLFormElement;
+			controller: AbortController;
+			submitter: HTMLElement | null;
+			cancel: () => void;
+		}) => {
+		return async ({
+			result,
+			update
+		}: {
+			result: ActionResult;
+			reset?: boolean;
+			update: (options?: { reset?: boolean }) => Promise<void>;
+		}) => {
+			errorMessage = null;
+			isSubmitting = true;
+			try {
+				if (result.type === 'success' && result.data) {
+					const data = result.data as AnalyseActionData;
+					if (data.error) {
+						errorMessage = data.error;
+						latestResult = null;
+					} else if (data.result) {
+						latestResult = data.result;
+					}
+				}
+				await update();
+			} finally {
+				isSubmitting = false;
+				const el = formElement.elements.namedItem('text');
+				text = el instanceof HTMLTextAreaElement ? el.value : text;
+			}
+		};
+	};
 </script>
 
 <!-- The central element with the welcome text and place to paste input-->
@@ -56,33 +102,7 @@ let canAnalyze = $derived(charCount > 50 && charCount < 2000 && !isSubmitting);
 			</div>
 		</header>
 
-		<form
-			method="POST"
-			use:enhance={({ form, submit }) => {
-				return async () => {
-					errorMessage = null;
-					isSubmitting = true;
-					try {
-						const result = await submit();
-						const data = result?.data as any;
-
-						if (data?.error) {
-							errorMessage = data.error as string;
-							latestResult = null;
-							return;
-						}
-
-						if (data?.result) {
-							latestResult = data.result as GeminiAnalysisResult;
-						}
-					} finally {
-						isSubmitting = false;
-						text = (form.elements.namedItem('text') as HTMLTextAreaElement)?.value ?? text;
-					}
-				};
-			}}
-			class="flex flex-col gap-4"
-		>
+		<form method="POST" action="?/analyse" use:enhance={enhanceAnalyse} class="flex flex-col gap-4">
 			<div>
 				<label for="analysis-text" class="text-base font-medium text-white">
 					Text to analyse
@@ -92,20 +112,21 @@ let canAnalyze = $derived(charCount > 50 && charCount < 2000 && !isSubmitting);
 					name="text"
 					bind:value={text}
 					rows="8"
-					class="mt-3 w-full resize-none rounded-[14px] border border-[#374151] bg-[#0f0f0f] px-5 py-4 text-sm text-white placeholder-gray-500 focus:outline-none"
-					placeholder="Paste article or post content here (50–2000 characters)..."
-				/>
+					class="mt-3 w-full resize-none rounded-[14px] border border-[#374151] bg-[#0f0f0f] px-5 py-4 text-sm
+					text-white placeholder-gray-500 focus:outline-none"
+					placeholder="Paste article or post content here (50–10000 characters)..."
+				></textarea>
 				<div class="mt-2 flex items-center justify-between text-xs text-gray-400">
 					<span>
 						{#if charCount < 50}
 							Minimum 50 characters for meaningful analysis.
-						{:else if charCount > 2000}
-							Text exceeds the 2000 character analysis limit.
+						{:else if charCount > 10000}
+							Text exceeds the 10000 character analysis limit.
 						{:else}
 							Text length looks good.
 						{/if}
 					</span>
-					<span>{charCount}/2000</span>
+					<span>{charCount}/10000</span>
 				</div>
 			</div>
 
@@ -119,14 +140,14 @@ let canAnalyze = $derived(charCount > 50 && charCount < 2000 && !isSubmitting);
 				<div class="w-full">
 					<PrimaryButton
 						type="submit"
-						label={isSubmitting ? 'Analysing…' : 'Analyze Text'}
-						disabled={!canAnalyze}
+						label={isSubmitting ? 'Analysing…' : 'Analyse text'}
+						disabled={!canAnalyse}
 						fullWidth
 					/>
 				</div>
 			</div>
 		</form>
 
-		<AnalysisResult {latestResult} result={latestResult} />
+		<AnalysisResult result={latestResult} />
 	</div>
 </div>

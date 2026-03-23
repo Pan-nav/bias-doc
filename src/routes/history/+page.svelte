@@ -1,14 +1,22 @@
 <script lang="ts">
+	// History page: list past analyses from the server; clicking one rebuilds a slim GeminiAnalysisResult for AnalysisResult.
 	import type { PageData } from './$types';
 	import AnalysisResult from '$lib/components/AnalysisResult.svelte';
 	import type { GeminiAnalysisResult } from '$lib/server/ai/gemini';
 
-	let { data } = $props<PageData>();
+	// Svelte 5: page data from +page.server.ts load().
+	interface Props {
+		data: PageData;
+	}
 
+	let { data }: Props = $props();
+
+	// ID of the clicked row (for selection state; detail panel uses selectedSummary).
 	let selectedId = $state<number | null>(null);
+	// Shaped like a live Gemini response so AnalysisResult can render score, types line, and summary text.
 	let selectedSummary = $state<GeminiAnalysisResult | null>(null);
 
-	// For this prototype we reconstruct a minimal view model for the selected analysis.
+	// DB rows only store flat strings; we fake biasTypes as one string and skip claims (not persisted as structured JSON).
 	function handleSelect(analysis: any) {
 		selectedId = analysis.id;
 		const combinedSummary =
@@ -17,12 +25,16 @@
 				: analysis.summary;
 		selectedSummary = {
 			biasScore: analysis.biasScore,
-			biasLabel: '', // label is calculated from score when rendering the live result
+			// DB has no separate label field; left blank so the sky label line is empty on history (score bar still shows).
+			biasLabel: '',
+			// Single entry from stored bias_type text (may be comma-separated types saved as one field).
 			biasTypes: analysis.biasType ? [analysis.biasType] : [],
 			summary: combinedSummary,
 			claims: []
 		};
 	}
+
+	// Layout: scrollable list left; right panel shows AnalysisResult or placeholder until a row is chosen.
 </script>
 
 <div
@@ -50,7 +62,8 @@
 					{#each data.analyses as analysis}
 						<button
 							type="button"
-							class="w-full rounded-[12px] border border-[#1f2937] bg-black/60 p-4 text-left text-sm text-gray-200 transition hover:border-sky-500/80 hover:bg-black"
+							class="w-full rounded-[12px] border border-[#1f2937] bg-black/60 p-4 text-left text-sm
+							 text-gray-200 transition hover:border-sky-500/80 hover:bg-black"
 							onclick={() => handleSelect(analysis)}
 						>
 							<div class="flex items-center justify-between gap-3">

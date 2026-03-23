@@ -1,7 +1,14 @@
 <script lang="ts">
+	// Shows bias score, types, summary, and claim-level source links from a Gemini analysis.
 	import type { GeminiAnalysisResult } from '$lib/server/ai/gemini';
 
+	// When null, nothing is rendered; dashboard passes the API result here after analyse succeeds.
 	export let result: GeminiAnalysisResult | null = null;
+
+	// Markup map: two-column grid — left: score bar + bias types + summary; right: verification blurb + each claim card
+	// Score bar width = (biasScore/10)*100%; gradient left→right for visual intensity.
+	// Bias type strings use replaceAll('_',' ') for readable labels.
+	// Each claim lists sources with stance + credibility; empty arrays show fallback copy.
 </script>
 
 {#if result}
@@ -11,10 +18,10 @@
 				<p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Bias Rating</p>
 				<div class="mt-2 flex items-center gap-3">
 					<div class="relative h-2 flex-1 overflow-hidden rounded-full bg-gray-800">
-						<div
+						<div>
 							class="absolute left-0 top-0 h-full rounded-full"
 							style={`width: ${(result.biasScore / 10) * 100}%; background: linear-gradient(90deg,#22c55e,#eab308,#ef4444);`}
-						/>
+						</div>
 					</div>
 					<span class="text-sm font-semibold">{result.biasScore} / 10</span>
 				</div>
@@ -43,6 +50,7 @@
 		</div>
 
 		<div class="flex flex-col gap-4">
+			<!-- Intro blurb when there are zero vs some claims -->
 			<div class="rounded-[15px] border border-[#1f2937] bg-[#020617] p-4">
 				<p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Source Verification</p>
 				{#if result.claims.length === 0}

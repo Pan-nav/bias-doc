@@ -1,12 +1,11 @@
 import Database from 'better-sqlite3';
 
-// Users in the database use a password hash field to match the design.
+// User record for sign-up / sign-in (email + stored credential).
 export type DbUser = {
 	email: string;
-	passwordHash: string;
+	password: string;
 };
 
-// Single SQLite file used for the coursework prototype.
 const DB_PATH = 'biasdoc.db';
 
 // Analyses table – mirrors the design diagram:
@@ -39,13 +38,13 @@ class AppDatabase {
 	}
 
 	private initialiseSchema() {
-		// Users table – matches the design section (id, email, password_hash, created_at).
+		// Users table: id, email, password, created_at.
 		this.db
 			.prepare(
 				`CREATE TABLE IF NOT EXISTS users (
 					id INTEGER PRIMARY KEY AUTOINCREMENT,
 					email TEXT UNIQUE NOT NULL,
-					password_hash TEXT NOT NULL,
+					password TEXT NOT NULL,
 					created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 				);`
 			)
@@ -55,7 +54,7 @@ class AppDatabase {
 		const anyUser = this.db.prepare('SELECT id FROM users LIMIT 1').get();
 		if (!anyUser) {
 			this.db
-				.prepare('INSERT INTO users (email, password_hash) VALUES (?, ?)')
+				.prepare('INSERT INTO users (email, password) VALUES (?, ?)')
 				.run('demo@example.com', 'demo-password');
 		}
 
@@ -77,16 +76,26 @@ class AppDatabase {
 			.run();
 	}
 
-	createUser(user: DbUser): void {
-		const stmt = this.db.prepare('INSERT INTO users (email, password_hash) VALUES (?, ?)');
-		stmt.run(user.email.trim().toLowerCase(), user.passwordHash);
+	createUser(user: DbUser): number {
+		const stmt = this.db.prepare('INSERT INTO users (email, password) VALUES (?, ?)');
+		const result = stmt.run(user.email.trim().toLowerCase(), user.password);
+		return Number(result.lastInsertRowid);
 	}
 
-	findUserByEmail(email: string): DbUser | null {
-		const stmt = this.db.prepare('SELECT id, email, password_hash FROM users WHERE email = ?');
-		const row = stmt.get(email.trim().toLowerCase());
+	findUserByEmail(email: string): (DbUser & { id: number }) | null {
+		const stmt = this.db.prepare('SELECT id, email, password FROM users WHERE email = ?');
+		const row = stmt.get(email.trim().toLowerCase()) as
+			| { id: number; email: string; password: string }
+			| undefined;
 		if (!row) return null;
-		return { email: row.email, passwordHash: row.password_hash } satisfies DbUser;
+		return { id: row.id, email: row.email, password: row.password };
+	}
+
+	getUserById(id: number): { id: number; email: string } | null {
+		const stmt = this.db.prepare('SELECT id, email FROM users WHERE id = ?');
+		const row = stmt.get(id) as { id: number; email: string } | undefined;
+		if (!row) return null;
+		return { id: row.id, email: row.email };
 	}
 
 	userExists(email: string): boolean {
@@ -138,26 +147,6 @@ class AppDatabase {
 			sources: row.sources ?? '',
 			createdAt: row.created_at
 		}));
-	}
-
-	getAnalysisById(id: number): DbAnalysis | null {
-		const stmt = this.db.prepare(
-			`SELECT id, user_id, input_text, bias_score, bias_type, summary, sources, created_at
-			 FROM analyses
-			 WHERE id = ?`
-		);
-		const row = stmt.get(id) as any;
-		if (!row) return null;
-		return {
-			id: row.id,
-			userId: row.user_id,
-			inputText: row.input_text,
-			biasScore: row.bias_score ?? 0,
-			biasType: row.bias_type ?? '',
-			summary: row.summary ?? '',
-			sources: row.sources ?? '',
-			createdAt: row.created_at
-		};
 	}
 }
 
