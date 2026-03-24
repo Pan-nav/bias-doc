@@ -18,10 +18,10 @@
 				<p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Bias Rating</p>
 				<div class="mt-2 flex items-center gap-3">
 					<div class="relative h-2 flex-1 overflow-hidden rounded-full bg-gray-800">
-						<div>
+						<div
 							class="absolute left-0 top-0 h-full rounded-full"
 							style={`width: ${(result.biasScore / 10) * 100}%; background: linear-gradient(90deg,#22c55e,#eab308,#ef4444);`}
-						</div>
+						></div>
 					</div>
 					<span class="text-sm font-semibold">{result.biasScore} / 10</span>
 				</div>
