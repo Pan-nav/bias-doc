@@ -42,7 +42,7 @@
 	style="background: radial-gradient(ellipse at bottom left, #00F3F9, #0034EB 30%, transparent 55%), #000;"
 >
 	<div class="flex w-full max-w-5xl flex-col gap-6 rounded-[15px] bg-black/80 px-8 py-10 shadow-xl">
-		<header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+		<header class="flex flex-col gap-2">
 			<div>
 				<h1 class="text-2xl font-bold text-white">History</h1>
 				<p class="mt-1 text-sm text-gray-400">
@@ -51,7 +51,7 @@
 			</div>
 		</header>
 
-		<div class="grid gap-8 md:grid-cols-[1.3fr,1.7fr]">
+		<div class="grid gap-8">
 			<section class="max-h-[480px] space-y-3 overflow-y-auto pr-2">
 				{#if data.analyses.length === 0}
 					<p class="text-sm text-gray-400">
