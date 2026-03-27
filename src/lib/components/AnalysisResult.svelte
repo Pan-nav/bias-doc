@@ -53,6 +53,9 @@
 			<!-- Intro blurb when there are zero vs some claims -->
 			<div class="rounded-[15px] border border-[#1f2937] bg-[#020617] p-4">
 				<p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Source Verification</p>
+				<p class="mt-1 text-xs text-gray-500">
+					These are sites the AI suggests for fact-checking each claim. Not citations taken from your pasted article.
+				</p>
 				{#if result.claims.length === 0}
 					<p class="mt-2 text-sm text-gray-300">
 						No specific factual claims were identified in this text.

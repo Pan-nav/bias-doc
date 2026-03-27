@@ -71,7 +71,7 @@
 									<span class="text-xs text-gray-400">
 										{new Date(analysis.createdAt).toLocaleString()}
 									</span>
-									<span class="mt-1 line-clamp-2 text-sm text-gray-100">
+									<span class="mt-1 line-clamp-3 text-sm text-gray-100">
 										{analysis.inputText}
 									</span>
 								</div>
