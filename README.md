@@ -1,3 +1,6 @@
+This is my A level computer science coursework. An AI Website that uses Gemini to analyse text to detect and rate bias in them
+
+
 # sv
 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
